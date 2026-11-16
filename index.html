@@ -490,12 +490,12 @@ body{background:radial-gradient(65% 32% at 92% 0%,#fff3e5 0%,rgba(255,243,229,0)
     const named=keys.flatMap((v,i)=>['NOVO NOME','NOVO NOME DA PAGINA','NOME DA PAGINA'].includes(v)?[i]:[]);
     if(!named.length)throw new Error('Coluna de nome não encontrada em '+name);
     const statusIndex=keys.indexOf('STATUS');
-    const urlIndex=['NOVA URL (INFRA NOVA)','NOVA URL','URL DA PAGINA','URL'].map(x=>keys.indexOf(x)).find(i=>i>=0);
+    const urlColumns=['NOVA URL (INFRA NOVA)','NOVA URL','URL','URL DA PAGINA'].map(x=>keys.indexOf(x)).filter(i=>i>=0);
     const rows=records.slice(config.index+1).filter(raw=>named.some(i=>String(raw[i]||'').trim()));
     const active=rows.filter(raw=>statusIndex>=0&&String(raw[statusIndex]||'').trim().toUpperCase()==='ATIVA').length;
     const inactive=rows.filter(raw=>statusIndex>=0&&String(raw[statusIndex]||'').trim().toUpperCase()==='INATIVA').length;
     return {total:rows.length,active,inactive,
-      previews:urlIndex<0?[]:rows.map(raw=>String(raw[urlIndex]||'').trim()).filter(v=>/^https?:\/\//i.test(v)).slice(0,100)};
+      previews:rows.map(raw=>urlColumns.map(i=>String(raw[i]||'').trim()).find(v=>/^https?:\/\//i.test(v))||'').filter(Boolean).slice(0,100)};
   }
   async function fullSheetSummary(name){
     if(!Object.hasOwn(TAB_IDS,name))throw new Error('Produto desconhecido.');
