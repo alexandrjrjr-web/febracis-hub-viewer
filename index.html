@@ -364,6 +364,15 @@ body{background:radial-gradient(65% 32% at 92% 0%,#fff3e5 0%,rgba(255,243,229,0)
     'PAULO VIEIRA':1502514281,
     'COLIGADAS':2018969214
   };
+  // Native Google Sheets column-visibility snapshot, audited on 2026-11-16.
+  // Public gviz does not publish columnMetadata.hiddenByUser.
+  const HIDDEN_COLUMNS=Object.freeze({
+    'Método CIS (new)':[0,7,8,10,12,16,18,20,22,24,27,36,38,42,44],
+    'CAMILA VIEIRA':[1,9,10,14,15,17,23,27,28,29,34,35,36,37,38,39,40],
+    'BUSINESS':[8],
+    'PAULO VIEIRA':[0,7,8,10,12,16,18,20,22,24,27,35,37,39,41,43],
+    'COLIGADAS':[]
+  });
   const inflight=new Map();const memory=new Map();let serial=0;
   const labels=()=>Object.keys(TAB_IDS);
   function gviz(gid){
@@ -401,7 +410,12 @@ body{background:radial-gradient(65% 32% at 92% 0%,#fff3e5 0%,rgba(255,243,229,0)
         c[29]=p('CODIGO DA COLIGADA','COLIGADA ID','COLIGADA');
       }
       if(/\[LOVABLE\]/i.test(c[4]))c[28]=c[4];
-      const originalFields=raw.map((v,j)=>({column:j+1,label:header.headers[j]||`Coluna ${j+1}`,value:String(v||'')}));
+      // Only show real, currently visible sheet columns with headings.
+      const hidden=new Set(HIDDEN_COLUMNS[name]||[]);
+      const originalFields=raw.flatMap((v,j)=>
+        !hidden.has(j)&&String(header.headers[j]||'').trim()?[{
+          column:j+1,label:header.headers[j],value:String(v||'')
+        }]:[]);
       return {rowNumber:header.index+i+2,cells:c,originalFields,extraFields:originalFields};
     }).filter(row=>String(row.cells[4]||row.cells[0]).trim());
     return {tab:name,rows,headers:header.headers,headerRow:header.index+1,legacy:!canonical,truncated:false};
@@ -561,7 +575,7 @@ function previewCard(url,title){
 }
 function lpCard(r){
  const c=r.cells,url=validUrl(c[5]);
- return `<article class="lp">${previewCard(c[5],c[4])}<div class="lphead"><div class="lpIdentity"><div class="eyebrow">LP · LINHA ${r.rowNumber}</div><div class="lpname">${esc(value(c[4]))}</div><div class="badges">${c[3]?badge(c[3],'funnel'):''}${c[6]?badge(c[6],'channel'):''}${c[14]?badge(c[14]):''}</div></div>${badge(c[1],String(c[1]).toUpperCase()==='ATIVA'?'active':String(c[1]).toUpperCase()==='INATIVA'?'inactive':'')}</div><div class="gridinfo"><div class="cell"><small>ENDEREÇO DA LP</small><span class="link" title="${esc(value(c[5]))}">${esc(value(c[5]))}</span></div><div class="cell"><small>ORIGEM</small><span title="${esc(value(c[28]))}">${esc(value(c[28]))}</span></div></div><div class="actions"><button class="btn" data-action="copyurl" data-row="${r.rowNumber}">⧉ Copiar link</button><button class="btn" data-action="copyorigin" data-row="${r.rowNumber}">Copiar origem</button><button class="btn" data-action="open" data-row="${r.rowNumber}" ${url?'':'disabled'}>↗ Abrir LP</button><button class="btn" data-action="editor" data-row="${r.rowNumber}">✎ Editar LP</button><button class="btn detailsButton" data-action="details" data-row="${r.rowNumber}">Informações completas →</button></div></article>`;
+ return `<article class="lp">${previewCard(c[5],c[4])}<div class="lphead"><div class="lpIdentity"><div class="eyebrow">LP · ${esc(selected)}</div><div class="lpname">${esc(value(c[4]))}</div><div class="badges">${c[3]?badge(c[3],'funnel'):''}${c[6]?badge(c[6],'channel'):''}${c[14]?badge(c[14]):''}</div></div>${badge(c[1],String(c[1]).toUpperCase()==='ATIVA'?'active':String(c[1]).toUpperCase()==='INATIVA'?'inactive':'')}</div><div class="gridinfo"><div class="cell"><small>ENDEREÇO DA LP</small><span class="link" title="${esc(value(c[5]))}">${esc(value(c[5]))}</span></div><div class="cell"><small>ORIGEM</small><span title="${esc(value(c[28]))}">${esc(value(c[28]))}</span></div></div><div class="actions"><button class="btn" data-action="copyurl" data-row="${r.rowNumber}">⧉ Copiar link</button><button class="btn" data-action="copyorigin" data-row="${r.rowNumber}">Copiar origem</button><button class="btn" data-action="open" data-row="${r.rowNumber}" ${url?'':'disabled'}>↗ Abrir LP</button><button class="btn" data-action="editor" data-row="${r.rowNumber}">✎ Editar LP</button><button class="btn detailsButton" data-action="details" data-row="${r.rowNumber}">Informações completas →</button></div></article>`;
 }
 function renderProduct(){
  const visible=matchedRows();
@@ -578,7 +592,7 @@ function showDetails(r){
  const empty=fields.filter(f=>String(f.value||'').trim()==='');
  const line=f=>{const h=validUrl(f.value);return `<div class="detailField"><label>COLUNA ${letters(f.column-1)} · ${esc(f.label||'Sem título')}</label><div class="val">${h?`<a href="${esc(h)}" target="_blank" rel="noopener noreferrer">${esc(f.value)}</a>`:esc(value(f.value))}</div></div>`};
  $('drawerTitle').textContent='Dados completos da LP';
- $('drawerBody').innerHTML=`<div class="detailIntro"><div class="eyebrow">LINHA ${r.rowNumber} · ${esc(selected)}</div><h2>${esc(value(rowCell(r,4)))}</h2><p>Todos os campos originais desta linha, sem perda de informações.</p></div><section><h3>Campos preenchidos · ${filled.length}</h3>${filled.map(line).join('')||'<p>Nenhum campo preenchido.</p>'}</section>${empty.length?`<details class="emptyFields"><summary>Exibir ${empty.length} campos vazios</summary><section>${empty.map(line).join('')}</section></details>`:''}`;
+ $('drawerBody').innerHTML=`<div class="detailIntro"><div class="eyebrow">LP · ${esc(selected)}</div><h2>${esc(value(rowCell(r,4)))}</h2><p>Somente colunas visíveis na planilha; campos ocultos não são apresentados.</p></div><section><h3>Campos preenchidos · ${filled.length}</h3>${filled.map(line).join('')||'<p>Nenhum campo preenchido.</p>'}</section>${empty.length?`<details class="emptyFields"><summary>Exibir ${empty.length} campos vazios</summary><section>${empty.map(line).join('')}</section></details>`:''}`;
  openDrawer();
 }
 
