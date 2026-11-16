@@ -824,8 +824,8 @@ document.addEventListener('click',async e=>{
  if(act==='applyHomeSearch'){return globalSearch()}
  if(act==='clearHomeSearch'){return home()}
  if(act==='retryGlobal')return globalSearch();
- if(act==='refresh'&&!selected&&data?.global)return globalSearch();
- if(act==='refresh'&&selected){return product(selected);}
+ if(act==='refresh'&&!selected&&data?.global)return syncDashboard(true);
+ if(act==='refresh'&&selected){return syncDashboard(true);}
  if(!data)return;
  if(act==='applySearch'){search=searchDraft.trim();pageLimit=12;renderProduct();return}
  if(act==='clearSearch'){search='';searchDraft='';status='';productFilter='';funnelFilter='';channelFilter='';pageTypeFilter='';workspaceFilter='';orderFilter='sheet';pageLimit=12;renderProduct();return}
@@ -892,7 +892,7 @@ function syncMobileDock(){
  $('mobileAction').classList.remove('isPrimary');
 }
 $('mobileSearch').onclick=()=>{const el=$(selected||data?.global?'search':'homeSearch');if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.focus({preventScroll:true});}else if(meta)home()};
-$('mobileAction').onclick=()=>{if(selected&&meta?.user?.canWrite)return showCreate();if(selected)return product(selected);if(data?.global)return globalSearch();if(meta)return home()};
+$('mobileAction').onclick=()=>{if(selected&&meta?.user?.canWrite)return showCreate();if(meta)return syncDashboard(true)};
 $('openSheet').onclick=()=>{if(meta?.spreadsheetUrl)window.open(meta.spreadsheetUrl,'_blank','noopener,noreferrer')};$('openEditor').onclick=()=>window.fbhEditLogin();
 api('fbhMeta').then(m=>{
  meta=m;
