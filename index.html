@@ -339,6 +339,21 @@ body{background:radial-gradient(65% 32% at 92% 0%,#fff3e5 0%,rgba(255,243,229,0)
 @media(max-width:359px){.productWorkspace .productRow{gap:7px;grid-template-columns:minmax(0,40%) minmax(0,1fr)}.productWorkspace .productTitle{font-size:13px}.productWorkspace .productGo{padding:7px}.productState{font-size:8px}.productShowcase{height:112px}}
 @media(prefers-reduced-motion:reduce){.productPreviewSkeleton{animation:none}.productWorkspace .productRow{transition:none}.productWorkspace .productRow:hover{transform:none}}
 
+
+/* Global discovery / sheet-driven filters; no inferred timestamps. */
+.advancedFilters{display:flex;flex-wrap:wrap;align-items:center;gap:9px}
+.advancedFilters .lpSearch{flex:1 1 100%;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) 94px}
+.advancedFilters .filterSelects{display:flex;flex:1 1 100%;flex-wrap:wrap;gap:8px}
+.advancedFilters .filterSelects .chipselect{flex:1 1 170px;width:auto;min-width:0;max-width:none;min-height:43px;border-radius:10px}
+.sortHint{font-size:10px;color:#8993a0;line-height:1.5;margin:0 0 12px}
+.globalProgress{background:#fff8e8;border:1px solid #f0deb8;border-radius:12px;color:#845913;font-size:12px;padding:13px;margin:8px 0 16px}
+@media(max-width:650px){
+ .advancedFilters{display:flex;gap:8px}
+ .advancedFilters .lpSearch{display:grid;grid-template-columns:minmax(0,1fr) 85px;flex:1 1 100%}
+ .advancedFilters .filterSelects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;flex:1 1 100%}
+ .advancedFilters .filterSelects .chipselect{min-width:0;width:100%;max-width:100%;height:43px;min-height:43px;grid-column:auto;font-size:12px;padding:5px 8px}
+ .advancedFilters>.btn{min-height:41px}
+}
 </style></head><body>
 <div class="app"><div class="topline"><div class="brand"><button class="brandHome" id="brandHome" type="button" aria-label="Voltar ao início do Hub Febracis" title="Voltar ao início"><span class="mark">✳</span><span><span class="brandname">febracis<i>.</i> <span style="font-weight:450">hub</span></span><span class="brandsub">Infraestrutura de landing pages</span></span></button><a class="brandCredit" href="https://febracismarke-dss4553.slack.com/team/U0ALCFTKZRT" target="_blank" rel="noopener noreferrer">Projeto por Alexandre Júnior ↗</a></div><div class="headside"><div class="presenceArea"><div title="Pessoas ativas no próprio Hub (últimos 2 minutos)"><div class="presenceTitle">ATIVOS NO HUB</div><div style="display:flex;align-items:center;gap:7px"><div id="presenceAvatars" class="presenceAvatars"></div><span id="presenceCount" class="presenceNum">-</span></div></div><div id="accountIdentity" class="accountIdentity" aria-label="Conta Google reconhecida pelo Hub" title="Identidade fornecida pela sessão Google Apps Script">Verificando conta</div><div id="viewSwitcher" class="viewSwitcher"><button type="button" class="current">Painel</button><button id="openSheet" type="button">Planilha ↗</button><button id="openEditor" type="button" class="btn">Área do editor</button></div><div id="userAvatar" class="avatar">F</div></div></div></div><div class="accountStrip" id="accountStrip" aria-live="polite"><span class="accountStripIndicator" aria-hidden="true"></span><span class="accountStripText" id="accountStripText">Acesso público · leitura liberada</span><button type="button" class="accountStripHelp" id="accountStripHelp">Sobre o acesso</button></div><div id="hero" class="hero"></div><div id="content"><div class="loader">Abrindo acesso público ao Hub...</div></div><footer class="hubFooter">Desenvolvido por <a href="https://febracismarke-dss4553.slack.com/team/U0ALCFTKZRT" target="_blank" rel="noopener noreferrer">Alexandre Júnior | Design e Web</a></footer></div>
 <nav class="mobileDock" id="mobileDock" aria-label="Menu inferior do Hub">
@@ -384,6 +399,7 @@ body{background:radial-gradient(65% 32% at 92% 0%,#fff3e5 0%,rgba(255,243,229,0)
       window[cb]=raw=>{if(!raw||raw.status!=='ok'||!raw.table){finish(new Error('Não foi possível ler esta aba pública.'));return;}finish(null,raw.table)};
       tag.onerror=()=>finish(new Error('Acesso à planilha indisponível. Verifique o compartilhamento e sua conexão.'));
       const qs=new URLSearchParams({gid:String(gid),headers:'0',tqx:`out:json;responseHandler:${cb}`,tq:'select *'});
+      qs.set('_',Date.now().toString());
       tag.src=`https://docs.google.com/spreadsheets/d/${ID}/gviz/tq?${qs}`;
       document.head.append(tag);
     });
@@ -458,6 +474,7 @@ const headers=['NOME DA PÁGINA','STATUS','PRODUTO','FUNIL','NOVO NOME','NOVA UR
 const demos=[['ATIVA','VSL','c2 - Google','LP - Método CIS | v0 c2 VSL','https://digital.febracis.com/l/metodo-cis-v0-c2-vsl2/','CHECKOUT'],['ATIVA','APLICAÇÃO','c3 - Facebook','LP - Método CIS | v1 c3 main','https://digital.febracis.com/l/metodo-cis-v1-c3-main/','LP DE OBRIGADO'],['ATIVA','APLICAÇÃO','c1 - Orgânico','LP - Método CIS Online | v1 c1','https://digital.febracis.com/l/metodo-cis-online-v1-c1/','CHECKOUT'],['INATIVA','APLICAÇÃO','c3 - Facebook','LP - Método CIS | v2 c3','https://digital.febracis.com/l/metodo-cis-v2-c3/','TYPEFORM']];
 function demoData(tab){return {tab,headers,rows:demos.map((r,i)=>{let c=Array(47).fill('');c[0]='LP teste';c[1]=r[0];c[2]='CIS';c[3]=r[1];c[4]=r[3].replace('Método CIS',tab==='Método CIS (new)'?'Método CIS':tab);c[5]=r[4];c[6]=r[2];c[10]=String(5658+i*1234);c[14]='Landing Page';c[15]=r[5];c[28]='[LP][CIS][V'+(i+1)+'] | p-'+(5658+i*1234)+' | t-1001';c[29]=i%2?'2':'1';return {rowNumber:i+2,cells:c,originalFields:c.map((v,j)=>({column:j+1,label:headers[j]||`Coluna ${letters(j)}`,value:String(v||'')}))}})}}
 let meta=null,selected=null,data=null,search='',searchDraft='',status='',loading=false,homeQuery='',homeDraft='',homeOverview=null,pageLimit=12,navToken=0;
+let productFilter='',funnelFilter='',channelFilter='',pageTypeFilter='',workspaceFilter='',orderFilter='sheet',globalLoading=false,globalFinished=0,globalFailed=[];
 function api(name,...args){
  if(DEMO){
   if(name==='fbhMeta')return Promise.resolve({tabs:fallbackTabs,user:{email:'demo@febracis.com.br',isEditor:true,canWrite:false},book:'INFRA LPs — PRODUTOS'});
@@ -485,11 +502,11 @@ function api(name,...args){
   }catch(error){done(error);}
  });
 }
-function hero(title,desc,back=false){$('hero').innerHTML=`<div><div class="eyebrow">WORKSPACE / ${back?esc(selected):'VISÃO GERAL'}</div><div class="heroTitleRow"><h1>${esc(title)} <span style="color:#ffae30">✳</span></h1></div><p>${esc(desc)}</p></div><div>${back?'<button class="btn" data-go="home">← Todos os produtos</button>':'<span class="subtle">'+(DEMO?'Prévia · Dados ilustrativos':'Conectado à planilha')+'</span>'}</div>`}
+function hero(title,desc,back=false){$('hero').innerHTML=`<div><div class="eyebrow">WORKSPACE / ${back?esc(selected||'BUSCA GLOBAL'):'VISÃO GERAL'}</div><div class="heroTitleRow"><h1>${esc(title)} <span style="color:#ffae30">✳</span></h1></div><p>${esc(desc)}</p></div><div>${back?'<button class="btn" data-go="home">← Todos os produtos</button>':'<span class="subtle">'+(DEMO?'Prévia · Dados ilustrativos':'Conectado à planilha')+'</span>'}</div>`}
 function kpis(items){return `<div class="kpis">${items.map(([label,num,tip,icon])=>`<div class="kpi"><div class="top"><span class="eyebrow">${esc(label)}</span><span class="ico">${icon}</span></div><div class="metric">${esc(num)}</div><div class="caption">${esc(tip)}</div></div>`).join('')}</div>`}
 async function home(){
  const current=++navToken;
- selected=null;data=null;search='';status='';homeQuery='';homeDraft='';
+ selected=null;data=null;search='';searchDraft='';status='';productFilter='';funnelFilter='';channelFilter='';pageTypeFilter='';workspaceFilter='';orderFilter='sheet';globalLoading=false;homeQuery='';homeDraft='';
  closeDrawer();
  window.scrollTo({top:0,behavior:'instant'});
  hero('Uma infraestrutura, organizada','Encontre a estrutura de LPs do produto que você precisa.');
@@ -530,12 +547,44 @@ async function home(){
     const statSuffix=noStats?'':inactive?`${inactive} inativas`:'Abrir biblioteca';
     return `<button type="button" class="productRow productWorkspaceCard" data-product="${esc(t)}" aria-label="Abrir produto ${esc(t)} com ${count} landing pages">${showcase(t,item)}<span class="productCardBody"><span class="productCardTop"><strong class="productTitle">${esc(t)}</strong><span class="productCardExternal" aria-hidden="true">↗</span></span><span class="productCardCount"><span class="productCardWindowIcon" aria-hidden="true">▤</span>${esc(subtitle)}</span><span class="productCardBottom"><span class="productState"><i aria-hidden="true"></i>${esc(status)}</span><span class="productCardSecondary">${esc(statSuffix)}</span><span class="productGo">Abrir <span aria-hidden="true">↗</span></span></span></span></button>`;
   }).join('');
-  $('content').innerHTML=metrics+`<section class="workspaceSection productWorkspace"><div class="sectiontitle"><div><h2>Produtos</h2><p>Escolha um produto para explorar suas landing pages.</p></div><span class="countPill">${tabs.length} de ${all.length}</span></div><div class="productToolbar"><div class="searchbar"><input class="search" id="homeSearch" type="search" aria-label="Pesquisar produtos" placeholder="Pesquisar produto..." value="${esc(homeDraft)}"><button class="btn dark searchButton" data-action="applyHomeSearch">⌕ Buscar</button>${homeQuery?'<button class="btn" data-action="clearHomeSearch">Limpar</button>':''}</div><span class="productToolbarSummary">${tabs.length} ${tabs.length===1?'produto':'produtos'} ${homeQuery?'encontrado'+(tabs.length!==1?'s':''):'disponíveis'}</span></div><div class="productList">${tiles||'<div class="emptyState">Nenhum produto encontrado. Tente outro termo.</div>'}</div></section>`;
+  $('content').innerHTML=metrics+`<section class="workspaceSection productWorkspace"><div class="sectiontitle"><div><h2>Produtos</h2><p>Explore por produto ou procure uma LP em todas as abas pela busca acima.</p></div><span class="countPill">${tabs.length} de ${all.length}</span></div><div class="productToolbar"><div class="searchbar"><input class="search" id="homeSearch" type="search" aria-label="Pesquisar produtos" placeholder="Nome, URL, canal ou qualquer LP..." value="${esc(homeDraft)}"><button class="btn dark searchButton" data-action="applyHomeSearch">⌕ Buscar</button>${homeQuery?'<button class="btn" data-action="clearHomeSearch">Limpar</button>':''}</div><span class="productToolbarSummary">${tabs.length} ${tabs.length===1?'produto':'produtos'} ${homeQuery?'encontrado'+(tabs.length!==1?'s':''):'disponíveis'}</span></div><div class="productList">${tiles||'<div class="emptyState">Nenhum produto encontrado. Tente outro termo.</div>'}</div></section>`;
  }
 
+async function globalSearch(){
+ const term=homeDraft.trim();
+ if(!term){await home();return}
+ const current=++navToken;
+ homeQuery=term;selected=null;search=term;searchDraft=term;
+ status='';productFilter='';funnelFilter='';channelFilter='';pageTypeFilter='';workspaceFilter='';orderFilter='sheet';pageLimit=12;
+ data={rows:[],global:true};globalLoading=true;globalFinished=0;globalFailed=[];
+ hero('Busca em todas as LPs','Resultados de todas as abas da planilha, inclusive nomes, URLs e canais.',true);
+ syncMobileDock();renderProduct();
+ const tabs=meta?.tabs||[];
+ const fetch=async tab=>{
+  try{
+    const response=await api('fbhData',tab);
+    if(current!==navToken)return;
+    data.rows.push(...(response.rows||[]).map(r=>({...r,__tab:tab})));
+  }catch(error){if(current===navToken)globalFailed.push({tab,message:error.message})}
+  finally{if(current===navToken){globalFinished++;renderProduct()}}
+ };
+ await Promise.all(tabs.map(fetch));
+ if(current===navToken){globalLoading=false;renderProduct()}
+}
+function uniqueValues(rows,col){
+ return [...new Set(rows.map(r=>String(rowCell(r,col)||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR',{sensitivity:'base',numeric:true}));
+}
+function sortRows(rows){
+ const out=[...rows];
+ if(orderFilter==='newest')return out.sort((a,b)=>(a.__tab||selected).localeCompare((b.__tab||selected),'pt-BR')||b.rowNumber-a.rowNumber);
+ if(orderFilter==='oldest')return out.sort((a,b)=>(a.__tab||selected).localeCompare((b.__tab||selected),'pt-BR')||a.rowNumber-b.rowNumber);
+ if(orderFilter==='name_az')return out.sort((a,b)=>String(rowCell(a,4)).localeCompare(String(rowCell(b,4)),'pt-BR',{sensitivity:'base',numeric:true}));
+ if(orderFilter==='name_za')return out.sort((a,b)=>String(rowCell(b,4)).localeCompare(String(rowCell(a,4)),'pt-BR',{sensitivity:'base',numeric:true}));
+ return out;
+}
 async function product(tab){
  const current=++navToken;
- selected=tab;data=null;search='';searchDraft='';status='';pageLimit=12;
+ selected=tab;data=null;search='';searchDraft='';status='';productFilter='';funnelFilter='';channelFilter='';pageTypeFilter='';workspaceFilter='';orderFilter='sheet';globalLoading=false;pageLimit=12;
  window.scrollTo({top:0,behavior:'instant'});
  hero(tab,'Links, status e informações de cada landing page.',true);
  syncMobileDock();
@@ -553,14 +602,23 @@ async function product(tab){
 function badge(v,kind=''){return `<span class="badge ${kind}">${esc(value(v))}</span>`}
 function rowCell(r,n){return r.cells[n]||''}
 function validUrl(s){try{const u=new URL(s);return ['https:','http:'].includes(u.protocol)?u.href:null}catch{return null}}
+function foldText(v){return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/\s+/g,' ').trim()}
 function matchedRows(){
- return (data?.rows||[]).filter(r=>{
+ const rows=(data?.rows||[]).filter(r=>{
+  if(workspaceFilter&&String(r.__tab||selected)!==workspaceFilter)return false;
+  if(productFilter&&String(rowCell(r,2)).trim()!==productFilter)return false;
+  if(funnelFilter&&String(rowCell(r,3)).trim()!==funnelFilter)return false;
+  if(channelFilter&&String(rowCell(r,6)).trim()!==channelFilter)return false;
+  if(pageTypeFilter&&String(rowCell(r,14)).trim()!==pageTypeFilter)return false;
   if(status&&String(rowCell(r,1)).trim().toUpperCase()!==status)return false;
   if(!search)return true;
-  const needle=search.toLocaleLowerCase('pt-BR');
-  return [...r.cells,...(r.originalFields||[]).map(f=>f.value)].some(v=>String(v||'').toLocaleLowerCase('pt-BR').includes(needle));
+  const needle=foldText(search).toLowerCase();
+  const fields=[r.__tab||selected,...(r.originalFields||[]).map(f=>f.value),...r.cells];
+  return fields.some(v=>foldText(v).toLowerCase().includes(needle));
  });
+ return sortRows(rows);
 }
+
 const PREVIEW_MAP=(()=>{try{return JSON.parse(document.getElementById('lpPreviewManifest')?.textContent||'{}')}catch{return {}}})();
 const PREVIEW_BASE=location.pathname.includes('/preview')?'../assets/lp-previews/':'assets/lp-previews/';
 function previewKey(url){try{const u=new URL(url);return (u.origin+u.pathname).replace(/\/+$/,'').toLowerCase()}catch{return ''}}
@@ -575,16 +633,30 @@ function previewCard(url,title){
 }
 function lpCard(r){
  const c=r.cells,url=validUrl(c[5]);
- return `<article class="lp">${previewCard(c[5],c[4])}<div class="lphead"><div class="lpIdentity"><div class="eyebrow">LP · ${esc(selected)}</div><div class="lpname">${esc(value(c[4]))}</div><div class="badges">${c[3]?badge(c[3],'funnel'):''}${c[6]?badge(c[6],'channel'):''}${c[14]?badge(c[14]):''}</div></div>${badge(c[1],String(c[1]).toUpperCase()==='ATIVA'?'active':String(c[1]).toUpperCase()==='INATIVA'?'inactive':'')}</div><div class="gridinfo"><div class="cell"><small>ENDEREÇO DA LP</small><span class="link" title="${esc(value(c[5]))}">${esc(value(c[5]))}</span></div><div class="cell"><small>ORIGEM</small><span title="${esc(value(c[28]))}">${esc(value(c[28]))}</span></div></div><div class="actions"><button class="btn" data-action="copyurl" data-row="${r.rowNumber}">⧉ Copiar link</button><button class="btn" data-action="copyorigin" data-row="${r.rowNumber}">Copiar origem</button><button class="btn" data-action="open" data-row="${r.rowNumber}" ${url?'':'disabled'}>↗ Abrir LP</button><button class="btn" data-action="editor" data-row="${r.rowNumber}">✎ Editar LP</button><button class="btn detailsButton" data-action="details" data-row="${r.rowNumber}">Informações completas →</button></div></article>`;
+ return `<article class="lp">${previewCard(c[5],c[4])}<div class="lphead"><div class="lpIdentity"><div class="eyebrow">LP · ${esc(r.__tab||selected)}</div><div class="lpname">${esc(value(c[4]))}</div><div class="badges">${c[3]?badge(c[3],'funnel'):''}${c[6]?badge(c[6],'channel'):''}${c[14]?badge(c[14]):''}</div></div>${badge(c[1],String(c[1]).toUpperCase()==='ATIVA'?'active':String(c[1]).toUpperCase()==='INATIVA'?'inactive':'')}</div><div class="gridinfo"><div class="cell"><small>ENDEREÇO DA LP</small><span class="link" title="${esc(value(c[5]))}">${esc(value(c[5]))}</span></div><div class="cell"><small>ORIGEM</small><span title="${esc(value(c[28]))}">${esc(value(c[28]))}</span></div></div><div class="actions"><button class="btn" data-action="copyurl" data-row="${r.rowNumber}" data-tab="${esc(r.__tab||selected)}">⧉ Copiar link</button><button class="btn" data-action="copyorigin" data-row="${r.rowNumber}" data-tab="${esc(r.__tab||selected)}">Copiar origem</button><button class="btn" data-action="open" data-row="${r.rowNumber}" data-tab="${esc(r.__tab||selected)}" ${url?'':'disabled'}>↗ Abrir LP</button><button class="btn" data-action="editor" data-row="${r.rowNumber}" data-tab="${esc(r.__tab||selected)}">✎ Editar LP</button><button class="btn detailsButton" data-action="details" data-row="${r.rowNumber}" data-tab="${esc(r.__tab||selected)}">Informações completas →</button></div></article>`;
 }
 function renderProduct(){
- const visible=matchedRows();
- const active=visible.filter(r=>String(rowCell(r,1)).toUpperCase()==='ATIVA').length;
- const inactive=visible.filter(r=>String(rowCell(r,1)).toUpperCase()==='INATIVA').length;
- const resultLabel=search||status?'Resultados filtrados':'Total deste produto';
- const cards=visible.slice(0,pageLimit).map(lpCard).join('');
- $('content').innerHTML=kpis([['Landing pages',visible.length,resultLabel,'▤'],['Ativas',active,'Nos resultados','↗'],['Inativas',inactive,'Nos resultados','◌']])+`<section class="workspaceSection"><div class="sectiontitle"><div><h2>Biblioteca de landing pages</h2><p>Pesquise, copie links ou abra os detalhes de cada LP.</p></div><span class="countPill">${visible.length} resultados</span></div><div class="filters"><div class="searchbar lpSearch"><input class="search" id="search" type="search" aria-label="Buscar landing pages" placeholder="Nome, URL, origem ou qualquer campo..." value="${esc(searchDraft)}"><button class="btn dark searchButton" data-action="applySearch">⌕ Buscar</button></div><select class="chipselect" id="status" aria-label="Filtrar status"><option value="">Todos os status</option><option value="ATIVA" ${status==='ATIVA'?'selected':''}>Ativas</option><option value="INATIVA" ${status==='INATIVA'?'selected':''}>Inativas</option></select>${search||status?'<button class="btn" data-action="clearSearch">Limpar filtros</button>':''}<button class="btn refreshButton" data-action="refresh">↻ Atualizar</button>${meta?.user?.canWrite?'<button class="btn gold newLpButton" data-action="create">+ Adicionar LP</button>':''}</div>${data.warning?`<div class="status">${esc(data.warning)}</div>`:''}${data.truncated?'<div class="status">A leitura foi limitada às primeiras linhas da aba.</div>':''}<div class="list" id="results">${cards||'<div class="emptyState">Nenhuma LP encontrada. Revise a busca ou o status.</div>'}</div>${visible.length>pageLimit?`<div class="loadMoreWrap"><button class="btn" data-action="loadmore">Ver mais LPs · ${Math.min(pageLimit,visible.length)} de ${visible.length}</button></div>`:''}</section>`;
+ const all=data?.rows||[],global=!!data?.global;
+ const scopeRows=global&&workspaceFilter?all.filter(r=>r.__tab===workspaceFilter):all;
+ const filtered=matchedRows();
+ const active=filtered.filter(r=>foldText(rowCell(r,1))==='ATIVA').length;
+ const inactive=filtered.filter(r=>foldText(rowCell(r,1))==='INATIVA').length;
+ const resultLabel=search||status||productFilter||funnelFilter||channelFilter||pageTypeFilter||workspaceFilter?'Resultados filtrados':global?'Em todas as abas':'Total deste produto';
+ const cards=filtered.slice(0,pageLimit).map(lpCard).join('');
+ const pick=(name,val,opts,defaultText)=>`<select class="chipselect" id="${name}" aria-label="${defaultText}"><option value="">${defaultText}</option>${opts.map(v=>`<option value="${esc(v)}" ${v===val?'selected':''}>${esc(v)}</option>`).join('')}</select>`;
+ const workspaces=global?pick('workspace',workspaceFilter,meta?.tabs||[],'Todas as abas'):'';
+ const products=pick('lpProduct',productFilter,uniqueValues(scopeRows,2),'Todos os produtos');
+ const funnels=pick('lpFunnel',funnelFilter,uniqueValues(scopeRows,3),'Todos os funis');
+ const channels=pick('lpChannel',channelFilter,uniqueValues(scopeRows,6),'Todos os canais');
+ const types=uniqueValues(scopeRows,14).length?pick('lpType',pageTypeFilter,uniqueValues(scopeRows,14),'Todos os tipos'):'';
+ const sort=`<select class="chipselect" id="order" aria-label="Ordenação"><option value="sheet" ${orderFilter==='sheet'?'selected':''}>Ordem da planilha</option><option value="newest" ${orderFilter==='newest'?'selected':''}>Últimas na aba*</option><option value="oldest" ${orderFilter==='oldest'?'selected':''}>Primeiras na aba</option><option value="name_az" ${orderFilter==='name_az'?'selected':''}>Nome A–Z</option><option value="name_za" ${orderFilter==='name_za'?'selected':''}>Nome Z–A</option></select>`;
+ const progress=globalLoading?`<div class="globalProgress" role="status" aria-live="polite">Pesquisando nas abas: ${globalFinished} de ${meta?.tabs?.length||5} concluídas. Os resultados aparecem conforme são encontrados.</div>`:'';
+ const errors=globalFailed.length?`<div class="status">${globalFailed.length} aba(s) não puderam ser consultadas. <button class="btn" data-action="retryGlobal">Tentar novamente</button></div>`:'';
+ const note='<p class="sortHint">*“Últimas na aba” usa a posição das linhas, não a data de modificação. A planilha não possui datas históricas por LP.</p>';
+ const clear=search||status||productFilter||funnelFilter||channelFilter||pageTypeFilter||workspaceFilter||orderFilter!=='sheet';
+ $('content').innerHTML=kpis([['Landing pages',filtered.length,resultLabel,'▤'],['Ativas',active,'Nos resultados','↗'],['Inativas',inactive,'Nos resultados','◌']])+`<section class="workspaceSection"><div class="sectiontitle"><div><h2>${global?'Resultados da busca global':'Biblioteca de landing pages'}</h2><p>${global?'Pesquise sem precisar saber a aba ou produto da página.':'Pesquise, filtre por produto e funil ou abra os detalhes da LP.'}</p></div><span class="countPill">${filtered.length} ${filtered.length===1?'resultado':'resultados'}</span></div><div class="filters advancedFilters"><div class="searchbar lpSearch"><input class="search" id="search" type="search" aria-label="Buscar landing pages" placeholder="Nome, URL, origem ou qualquer campo..." value="${esc(searchDraft)}"><button class="btn dark searchButton" data-action="applySearch">⌕ Buscar</button></div><div class="filterSelects">${workspaces}${products}${funnels}${channels}${types}<select class="chipselect" id="status" aria-label="Filtrar status"><option value="">Todos os status</option><option value="ATIVA" ${status==='ATIVA'?'selected':''}>Ativas</option><option value="INATIVA" ${status==='INATIVA'?'selected':''}>Inativas</option></select>${sort}</div>${clear?'<button class="btn" data-action="clearSearch">Limpar filtros</button>':''}<button class="btn refreshButton" data-action="refresh">↻ Atualizar</button>${!global&&meta?.user?.canWrite?'<button class="btn gold newLpButton" data-action="create">+ Adicionar LP</button>':''}</div>${note}${progress}${errors}${data?.warning?`<div class="status">${esc(data.warning)}</div>`:''}${data?.truncated?'<div class="status">A leitura foi limitada às primeiras linhas da aba.</div>':''}<div class="list" id="results">${cards||(!globalLoading?'<div class="emptyState">Nenhuma LP encontrada. Revise a busca e os filtros.</div>':'')}</div>${filtered.length>pageLimit?`<div class="loadMoreWrap"><button class="btn" data-action="loadmore">Ver mais LPs · ${Math.min(pageLimit,filtered.length)} de ${filtered.length}</button></div>`:''}</section>`;
 }
+
 function renderResultsOnly(){renderProduct()}
 function showDetails(r){
  const fields=r.originalFields||r.extraFields||[];
@@ -592,7 +664,7 @@ function showDetails(r){
  const empty=fields.filter(f=>String(f.value||'').trim()==='');
  const line=f=>{const h=validUrl(f.value);return `<div class="detailField"><label>COLUNA ${letters(f.column-1)} · ${esc(f.label||'Sem título')}</label><div class="val">${h?`<a href="${esc(h)}" target="_blank" rel="noopener noreferrer">${esc(f.value)}</a>`:esc(value(f.value))}</div></div>`};
  $('drawerTitle').textContent='Dados completos da LP';
- $('drawerBody').innerHTML=`<div class="detailIntro"><div class="eyebrow">LP · ${esc(selected)}</div><h2>${esc(value(rowCell(r,4)))}</h2><p>Somente colunas visíveis na planilha; campos ocultos não são apresentados.</p></div><section><h3>Campos preenchidos · ${filled.length}</h3>${filled.map(line).join('')||'<p>Nenhum campo preenchido.</p>'}</section>${empty.length?`<details class="emptyFields"><summary>Exibir ${empty.length} campos vazios</summary><section>${empty.map(line).join('')}</section></details>`:''}`;
+ $('drawerBody').innerHTML=`<div class="detailIntro"><div class="eyebrow">LP · ${esc(r.__tab||selected)}</div><h2>${esc(value(rowCell(r,4)))}</h2><p>Somente colunas visíveis na planilha; campos ocultos não são apresentados.</p></div><section><h3>Campos preenchidos · ${filled.length}</h3>${filled.map(line).join('')||'<p>Nenhum campo preenchido.</p>'}</section>${empty.length?`<details class="emptyFields"><summary>Exibir ${empty.length} campos vazios</summary><section>${empty.map(line).join('')}</section></details>`:''}`;
  openDrawer();
 }
 
@@ -651,17 +723,19 @@ document.addEventListener('click',async e=>{
  if(t.dataset.product)return product(t.dataset.product);
  if(t.dataset.go)return home();
  const act=t.dataset.action;
- if(act==='applyHomeSearch'){homeQuery=homeDraft.trim();renderHome();return}
- if(act==='clearHomeSearch'){homeDraft='';homeQuery='';renderHome();return}
+ if(act==='applyHomeSearch'){return globalSearch()}
+ if(act==='clearHomeSearch'){return home()}
+ if(act==='retryGlobal')return globalSearch();
+ if(act==='refresh'&&!selected&&data?.global)return globalSearch();
  if(act==='refresh'&&selected){return product(selected);}
  if(!data)return;
  if(act==='applySearch'){search=searchDraft.trim();pageLimit=12;renderProduct();return}
- if(act==='clearSearch'){search='';searchDraft='';status='';pageLimit=12;renderProduct();return}
+ if(act==='clearSearch'){search='';searchDraft='';status='';productFilter='';funnelFilter='';channelFilter='';pageTypeFilter='';workspaceFilter='';orderFilter='sheet';pageLimit=12;renderProduct();return}
  if(act==='loadmore'){pageLimit+=12;renderProduct();return}
  if(act==='refresh')return product(selected);
  if(act==='create')return showCreate();
  if(act==='cancelCreate'){closeDrawer();return}
- const r=data.rows.find(r=>String(r.rowNumber)===t.dataset.row);if(!r)return;
+ const r=data.rows.find(r=>String(r.rowNumber)===t.dataset.row&&String(r.__tab||selected)===String(t.dataset.tab||selected));if(!r)return;
  if(act==='editor')return window.fbhEditLogin();
  if(act==='details')return showDetails(r);
  if(act==='copyurl')return copyText(rowCell(r,5));
@@ -672,10 +746,10 @@ document.addEventListener('input',e=>{
  if(e.target.id==='homeSearch')homeDraft=e.target.value;
  if(e.target.id==='search')searchDraft=e.target.value;
 });
-document.addEventListener('change',e=>{if(e.target.id==='status'){status=e.target.value;pageLimit=12;renderProduct()}});
+document.addEventListener('change',e=>{const id=e.target.id;if(id==='status')status=e.target.value;else if(id==='workspace'){workspaceFilter=e.target.value;productFilter='';funnelFilter='';channelFilter='';pageTypeFilter=''}else if(id==='lpProduct')productFilter=e.target.value;else if(id==='lpFunnel')funnelFilter=e.target.value;else if(id==='lpChannel')channelFilter=e.target.value;else if(id==='lpType')pageTypeFilter=e.target.value;else if(id==='order')orderFilter=e.target.value;else return;pageLimit=12;renderProduct()});
 document.addEventListener('keydown',e=>{
  if(e.key==='Escape')closeDrawer();
- if(e.key==='Enter'&&e.target.id==='homeSearch'){e.preventDefault();homeQuery=homeDraft.trim();renderHome()}
+ if(e.key==='Enter'&&e.target.id==='homeSearch'){e.preventDefault();globalSearch()}
  if(e.key==='Enter'&&e.target.id==='search'){e.preventDefault();search=searchDraft.trim();pageLimit=12;renderProduct()}
 });
 
@@ -719,8 +793,8 @@ function syncMobileDock(){
  $('mobileActionLabel').textContent='Atualizar';
  $('mobileAction').classList.remove('isPrimary');
 }
-$('mobileSearch').onclick=()=>{const el=$(selected?'search':'homeSearch');if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.focus({preventScroll:true});}else if(meta)home()};
-$('mobileAction').onclick=()=>{if(selected&&meta?.user?.canWrite)return showCreate();if(selected)return product(selected);if(meta)return home()};
+$('mobileSearch').onclick=()=>{const el=$(selected||data?.global?'search':'homeSearch');if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.focus({preventScroll:true});}else if(meta)home()};
+$('mobileAction').onclick=()=>{if(selected&&meta?.user?.canWrite)return showCreate();if(selected)return product(selected);if(data?.global)return globalSearch();if(meta)return home()};
 $('openSheet').onclick=()=>{if(meta?.spreadsheetUrl)window.open(meta.spreadsheetUrl,'_blank','noopener,noreferrer')};$('openEditor').onclick=()=>window.fbhEditLogin();
 api('fbhMeta').then(m=>{
  meta=m;
