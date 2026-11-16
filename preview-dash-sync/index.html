@@ -569,7 +569,7 @@ async function home(){
  try{
   const result=await api('fbhOverview');
   if(navToken===current&&selected===null){homeOverview=result;renderHome();renderSyncLabel(result);}
- }catch(e){console.warn('Resumo indisponível:',e.message);}
+ }catch(e){console.warn('Resumo indisponível:',e.message);renderSyncLabel({stale:true,warning:e.message});}
 }
 let syncBusy=false,lastSyncAt=0;
 function renderSyncLabel(info){
