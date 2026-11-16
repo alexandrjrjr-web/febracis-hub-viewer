@@ -589,6 +589,10 @@ async function syncDashboard(force=false){
  const token=navToken;
  try{
    if(force)window.fbhForceDataRefresh?.();
+   // Always refresh the registered totals, even when the user stays on a product.
+   const summary=await api('fbhOverview');
+   if(token!==navToken)return;
+   homeOverview=summary;
    if(selected){
      const updated=await api('fbhData',selected);
      if(token===navToken&&selected===updated.tab){data=updated;renderProduct();}
@@ -597,8 +601,7 @@ async function syncDashboard(force=false){
      const results=await Promise.all(names.map(async tab=>({...await api('fbhData',tab),__tab:tab})));
      if(token===navToken&&data?.global){data.rows=results.flatMap(x=>x.rows.map(r=>({...r,__tab:x.__tab})));renderProduct();}
    }else{
-     const updated=await api('fbhOverview');
-     if(token===navToken&&!selected){homeOverview=updated;renderHome();renderSyncLabel(updated)}
+     if(token===navToken&&!selected){renderHome();renderSyncLabel(summary)}
    }
  }catch(error){
    console.warn('Atualização automática indisponível:',error.message);
