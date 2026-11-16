@@ -1,0 +1,1 @@
+Experimentação isolada: indicadores totais via exportação CSV Google Sheets (inclui linhas ocultas), listas GViz continuam respeitando filtros nativos; refresh após 60 segundos e ao voltar à aba, cache de 25 segundos, último status se Google falhar. Sem alterações nos dados ou editor.
