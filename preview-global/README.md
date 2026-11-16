@@ -1,0 +1,1 @@
+Prévia independente: busca global por LP em 5 abas, filtros dinâmicos baseados na coluna de cabeçalho PRODUTO (não número fixo), funil, status, aba e ordenação por linhas. Datas reais não existem nos dados históricos. Sem alterações na planilha ou no editor de produção.
