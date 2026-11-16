@@ -440,7 +440,27 @@ body{background:radial-gradient(65% 32% at 92% 0%,#fff3e5 0%,rgba(255,243,229,0)
   async function load(name){
     if(!Object.hasOwn(TAB_IDS,name))throw new Error('Produto não encontrado.');
     const current=inflight.get(name);if(current)return current;
-    const promise=gviz(TAB_IDS[name]).then(table=>{const result=convert(table,name);memory.set(name,result);return result}).finally(()=>inflight.delete(name));
+    // Use the same complete CSV source used by the dashboard summary.
+    // Unlike GViz, the CSV export includes rows hidden/filtered in Google Sheets,
+    // so the list and KPIs always reconcile with the spreadsheet.
+    const promise=(async()=>{
+      const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),22000);
+      try{
+        const qs=new URLSearchParams({format:'csv',gid:String(TAB_IDS[name]),_:(Date.now()).toString()});
+        const url=`https://docs.google.com/spreadsheets/d/${ID}/export?${qs}`;
+        const res=await fetch(url,{cache:'no-store',credentials:'omit',signal:controller.signal});
+        if(!res.ok||!String(res.headers.get('content-type')||'').includes('csv'))throw new Error('O Google Sheets não forneceu os dados completos de '+name);
+        const records=parseCsv(await res.text());
+        const width=Math.max(1,...records.map(r=>r.length));
+        const table={
+          cols:Array.from({length:width},()=>({})),
+          rows:records.map(r=>({c:Array.from({length:width},(_,i)=>({v:r[i]??''}))}))
+        };
+        const result=convert(table,name);
+        memory.set(name,result);
+        return result;
+      }finally{clearTimeout(timer)}
+    })().finally(()=>inflight.delete(name));
     inflight.set(name,promise);return promise;
   }
   // The GViz endpoint omits hidden sheet rows. The official Google Sheets CSV
@@ -904,7 +924,7 @@ api('fbhMeta').then(m=>{
  $('viewSwitcher').style.display='flex';
  home();
  if(DEMO){$('presenceCount').textContent='prévia';}
- else {refreshPresence();setInterval(refreshPresence,45000);setInterval(refreshVisibleTabs,60000);setInterval(()=>syncDashboard(true),60000);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')syncDashboard(true)});window.addEventListener('focus',()=>syncDashboard(true));}
+ else {refreshPresence();setInterval(refreshPresence,45000);setInterval(refreshVisibleTabs,60000);setInterval(()=>syncDashboard(true),30000);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')syncDashboard(true)});window.addEventListener('focus',()=>syncDashboard(true));}
 }).catch(e=>{$('content').innerHTML='<div class="status error"><strong>Não foi possível conectar ao Hub.</strong><p>'+esc(e.message)+'</p><button class="btn" id="retryHub">Tentar novamente</button></div>';$('retryHub').onclick=()=>location.reload();});
 })();
 </script></body></html>
